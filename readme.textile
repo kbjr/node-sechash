@@ -3,7 +3,7 @@ h1. sechash
 h4. Secure password hashing with salt and key stretching
 
 Author: James Brumond
-Version: 0.1.0
+Version: 0.1.1
 
 Copyright 2011 James Brumond
 Dual licensed under MIT and GPL
@@ -29,23 +29,32 @@ h3. Using the strong stuff
 // This will hash the string quite a bit more strongly. It adds
 // a salt parameter and an iterations parameter to make the hash
 // harder to break.
-var hash1 = sechash.strongHash('md5', 'Your String', 'Salt', 2500);
+var hash1 = sechash.strongHashSync('md5', 'Your String', 'Salt', 2500);
 
 // If no salt value is given, it will randomly generate salt for
-// you; similarly, if no iteration count is given, it will randomly
-// select a number between 1000 and 10000.
-var hash2 = sechash.strongHash('md5', 'Your String');</code></pre>
+// you; similarly, if no iteration count is given, it will default
+// to 2000.
+var hash2 = sechash.strongHashSync('md5', 'Your String');
+
+// Because this function can take so long to run, it has an asynchronous
+// option as well, which is very similar...
+sechash.strongHash('md5', 'Your String', function(err, hash3) {
+    console.log(hash3);
+});</code></pre>
 
 h3. Testing a hash
 
 <pre><code>var sechash = require('sechash');
 
 // First we generate a hash...
-var hash = sechash.strongHash('md5', 'Your String', 'Salt', 2500);
+var hash = sechash.strongHashSync('md5', 'Your String', 'Salt', 2500);
 
 // To test if a string matches a hash, we you the testHash method
-sechash.testHash('Your String', hash);    // true
-sechash.testHash('Another String', hash); // false
+sechash.testHashSync('Your String', hash);    // true
+sechash.testHashSync('Another String', hash); // false
 
-</code></pre>
+// Again, this function also has an async form...
+sechash.testHash('Your String', hash, function(err, match) {
+    console.log(match); // true
+});</code></pre>
 
