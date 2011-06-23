@@ -3,7 +3,7 @@ h1. sechash
 h4. Secure password hashing with salt and key stretching
 
 Author: James Brumond
-Version: 0.1.1
+Version: 0.1.2
 
 Copyright 2011 James Brumond
 Dual licensed under MIT and GPL
@@ -20,7 +20,11 @@ h3. Running a simple hash
 
 // This will do a simple md5 hash, the same as if you used the
 // built-in "crypto" module.
-var hash = sechash.simpleHash('md5', 'Your String');</code></pre>
+var hash = sechash.basicHash('md5', 'Your String');
+
+// You can also use the testBasicHash method to easily test if
+// a string matches a hash
+sechash.testBasicHash('md5', 'Your String', hash); // true</code></pre>
 
 h3. Using the strong stuff
 

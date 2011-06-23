@@ -2,7 +2,7 @@
 	"author": "James Brumond <kbjr14@gmail.com> (http://jbrumond.me)",
 	"name": "sechash",
 	"description": "Secure password hashing with salt and key stretching",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/kbjr/node-sechash.git"
