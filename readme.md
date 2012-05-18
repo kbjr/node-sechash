@@ -3,9 +3,12 @@
 #### Secure password hashing with salt and key stretching
 
 Author: James Brumond
+
 Version: 0.2.0
 
+
 Copyright 2012 James Brumond
+
 Dual licensed under MIT and GPL
 
 ## Install
