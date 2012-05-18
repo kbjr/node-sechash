@@ -94,11 +94,11 @@ The hashing algorithm to use. Common hashing algorithms include `"sha1"`, `"md5"
 
 ###### iterations
 
-One method used by sechash to make hashes more secure is [key stretching](http://en.wikipedia.org/wiki/Key_stretching), or iterating over a hash multiple times with the expressed purpose of slowing down the hashing process. This value is the number of times to hash the given string. The default used is `2000`.
+One method used by sechash to make hashes more secure is [key stretching][1], or iterating over a hash multiple times with the expressed purpose of slowing down the hashing process. This value is the number of times to hash the given string. The default used is `2000`.
 
 ###### salt
 
-Another method used by sechash is called [salt](http://en.wikipedia.org/wiki/Salt_(cryptography)). By default, sechash will randomly generate some salt to use, but you can provide this value to specify the salt string.
+Another method used by sechash is called [salt][2]. By default, sechash will randomly generate some salt to use, but you can provide this value to specify the salt string.
 
 ###### intervalLength
 
@@ -116,4 +116,7 @@ sechash.strongHashSync('foo', {salt: 'baz', iterations: 3000});
 
 This allows sechash to correctly repeat the hashing process, therefore making hash testing possible. If you do not want this meta data included in the hash, you can set `includeMeta` to false. One reason for doing this may be that, instead of using a random salt, you may want to use one secret salt value and you don't want this value stored with the hash.
 
+
+   [1]: http://en.wikipedia.org/wiki/Key_stretching
+   [2]: http://en.wikipedia.org/wiki/Salt_(cryptography)
 
