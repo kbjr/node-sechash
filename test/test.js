@@ -1,70 +1,176 @@
-
+'use strict';
 var sechash = require('../lib/sechash');
+var assert = require('assert');
 
-var str1 = 'foo';
-var str2 = 'bar';
-var conf = {
-	salt: 'baz',
-	algorithm: 'sha1',
-	includeMeta: false
-};
+describe('sechash', function() {
+	describe('basic', function() {
+		var FIXTURES = [{
+			algorithm: "sha1",
+			hash: "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
+		}, {
+			algorithm: "md5",
+			hash: "acbd18db4cc2f85cedef654fccc4a4d8"
+		}, {
+			algorithm: "sha256",
+			hash: "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+		}, {
+			algorithm: "sha512",
+			hash: "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19594a7eb539453e1ed7"
+		}];
 
-// Basic Hash
-var basicHash = sechash.basicHash(conf.algorithm, str1);
-console.log('\nBasic Hash: "' + basicHash + '"');
-console.log('Test Basic Hash (pass): ' +
-	String(sechash.testBasicHash(conf.algorithm, str1, basicHash))
-);
-console.log('Test Basic Hash (fail): ' +
-	String(sechash.testBasicHash(conf.algorithm, str2, basicHash))
-);
+		FIXTURES.forEach(function(fixture) {
+			describe(fixture.algorithm, function() {
+				it('basicHash should hash', function() {
+					var basicHash = sechash.basicHash(fixture.algorithm, 'foo');
 
-// Strong Hash (Sync w/o meta)
-testStrongHashSync(false);
+					assert.strictEqual(basicHash, fixture.hash);
+				});
 
-// Strong Hash (Async w/o meta)
-testStrongHashAsync(false, function() {
-	
-	conf.includeMeta = true;
-	
-	// Strong Hash (Sync w/ meta)
-	testStrongHashSync(true);
-	
-	// Strong Hash (Async w/ meta)
-	testStrongHashAsync(true, function() {
-		
-		console.log('');
-		
-	});
-	
-});
+				it('testBasicHash should pass', function() {
+					var result = sechash.testBasicHash(fixture.algorithm, 'foo', fixture.hash);
 
-// ------------------------------------------------------------------
-//  Helpers
+					assert.strictEqual(result, true);
+				});
 
-function testStrongHashSync(meta) {
-	meta = 'w/' + (meta ? '' : 'o');
-	var strongHash = sechash.strongHashSync(str1, conf);
-	console.log('\nStrong Hash ' + meta + ' Meta (Sync): "' + strongHash + '"');
-	console.log('Test Hash (pass): ' +
-		String(sechash.testHashSync(str1, strongHash, conf))
-	);
-	console.log('Test Hash (fail): ' +
-		String(sechash.testHashSync(str2, strongHash, conf))
-	);
-}
+				it('testBasicHash should fail', function() {
+					var result = sechash.testBasicHash(fixture.algorithm, 'bar', fixture.hash);
 
-function testStrongHashAsync(meta, callback) {
-	meta = 'w/' + (meta ? '' : 'o');
-	sechash.strongHash(str1, conf).then(function(strongHash) {
-		console.log('\nStrong Hash ' + meta + ' Meta (Async): "' + strongHash + '"');
-		sechash.testHash(str1, strongHash, conf).then(function(isMatch) {
-			console.log('Test Hash (pass): ' + String(isMatch));
-			sechash.testHash(str2, strongHash, conf).then(function(isMatch) {
-				console.log('Test Hash (fail): ' + String(isMatch));
-				callback();
+					assert.strictEqual(result, false);
+				});
+
 			});
 		});
 	});
-}
 
+	describe('strong', function() {
+		var FIXTURES = [{
+			algorithm: "sha1",
+			hash: "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
+		}, {
+			algorithm: "md5",
+			hash: "acbd18db4cc2f85cedef654fccc4a4d8"
+		}, {
+			algorithm: "sha256",
+			hash: "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+		}, {
+			algorithm: "sha512",
+			hash: "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19594a7eb539453e1ed7"
+		}];
+
+		describe('sync', function() {
+			FIXTURES.forEach(function(fixture) {
+				describe(fixture.algorithm, function() {
+
+					it('using default options', function() {
+						var opts = {
+							algorithm: fixture.algorithm
+						};
+
+						var string = 'Your String';
+						var hash = sechash.strongHashSync(string);
+						assert.strictEqual(sechash.testHashSync(string, hash), true);
+						assert.strictEqual(sechash.testHashSync(string, hash + '1'), false);
+						assert.strictEqual(sechash.testHashSync(string, '1' + hash), false);
+						assert.strictEqual(sechash.testHashSync('Another string', hash), false);
+					});
+
+					it('using non-default options', function() {
+						var opts = {
+					    algorithm: fixture.algorithm,
+					    iterations: 2000,
+					    salt: 'some salt string'
+						};
+
+						var string = 'Your String';
+						var hash = sechash.strongHashSync(string);
+						assert.strictEqual(sechash.testHashSync(string, hash), true);
+						assert.strictEqual(sechash.testHashSync(string, hash + '1'), false);
+						assert.strictEqual(sechash.testHashSync(string, '1' + hash), false);
+						assert.strictEqual(sechash.testHashSync('Another string', hash), false);
+					});
+
+				});
+			});
+		});
+
+		describe('callback-based', function() {
+			FIXTURES.forEach(function(fixture) {
+				describe(fixture.algorithm, function() {
+
+					function performCallbackTests(opts, done) {
+						var string = 'Your String';
+						sechash.strongHash(string, function(err, hash) {
+							if (err) return done(err);
+
+							sechash.testHash(string, hash, function(err, result) {
+								if (err) return done(err);
+
+								assert.strictEqual(result, true);
+
+								sechash.testHash(string, hash + '1', function(err, result) {
+									if (err) return done(err);
+
+									assert.strictEqual(result, false);
+
+									sechash.testHash(string, '1' + hash, function(err, result) {
+										if (err) return done(err);
+
+										assert.strictEqual(result, false);
+
+										sechash.testHash('Another string', hash, function(err, result) {
+											if (err) return done(err);
+
+											assert.strictEqual(result, false);
+
+											done();
+										});
+
+									});
+
+								});
+							})
+						});
+					}
+
+					it('using default options', function(done) {
+						var opts = {
+							algorithm: fixture.algorithm
+						};
+
+						return performCallbackTests(opts, done);
+					});
+
+					it('using default options', function(done) {
+						var opts = {
+							algorithm: fixture.algorithm,
+							iterations: 2000,
+							salt: 'some salt string'
+						};
+
+						return performCallbackTests(opts, done);
+					});
+
+					it('includeMeta on', function(done) {
+						var opts = {
+							algorithm: fixture.algorithm,
+							includeMeta: true
+						};
+
+						return performCallbackTests(opts, done);
+					});
+
+					it('includeMeta off', function(done) {
+						var opts = {
+							algorithm: fixture.algorithm,
+							includeMeta: false
+						};
+
+						return performCallbackTests(opts, done);
+					});
+				});
+			});
+		});
+
+	});
+
+});
