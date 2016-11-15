@@ -93,6 +93,78 @@ describe('sechash', function() {
 			});
 		});
 
+		describe('promise-based', function() {
+			FIXTURES.forEach(function(fixture) {
+				describe(fixture.algorithm, function() {
+
+					function performPromiseTests(opts) {
+						var string = 'Your String';
+						var hash;
+						return sechash.strongHash(string)
+							.then(function(_hash) {
+								hash = _hash;
+
+								return sechash.testHash(string, hash)
+							})
+							.then(function(result) {
+								assert.strictEqual(result, true);
+
+								return sechash.testHash(string, hash + '1');
+							})
+							.then(function(result) {
+								assert.strictEqual(result, false);
+
+								return sechash.testHash(string, '1' + hash);
+							})
+							.then(function(result) {
+								assert.strictEqual(result, false);
+
+								return sechash.testHash('Another string', hash);
+							})
+							.then(function(result) {
+								assert.strictEqual(result, false);
+							});
+					}
+					it('using default options', function() {
+						var opts = {
+							algorithm: fixture.algorithm
+						};
+
+						return performPromiseTests(opts);
+					});
+
+					it('using non-default options', function() {
+						var opts = {
+							algorithm: fixture.algorithm,
+							iterations: 2000,
+							salt: 'some salt string'
+						};
+
+						return performPromiseTests(opts);
+					});
+
+					it('includeMeta on', function() {
+						var opts = {
+							algorithm: fixture.algorithm,
+							includeMeta: true
+						};
+
+						return performPromiseTests(opts);
+					});
+
+					it('includeMeta off', function() {
+						var opts = {
+							algorithm: fixture.algorithm,
+							includeMeta: false
+						};
+
+						return performPromiseTests(opts);
+					});
+
+				});
+			});
+		});
+
 		describe('callback-based', function() {
 			FIXTURES.forEach(function(fixture) {
 				describe(fixture.algorithm, function() {
